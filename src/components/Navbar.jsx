@@ -5,13 +5,15 @@ import LoginModal from "./LoginModal";
 import RegistroModal from "./RegistroModal";
 import logo from "../images/logo3.png";
 import Snackbar from "@mui/material/Snackbar";
+import { loginUsuarioAPI, obtenerPaisesAPI, registroUsuarioAPI } from "../services/service";
+import { useDispatch, useSelector } from 'react-redux'
+import { cargarPaises } from "../slices/paisesSlice";
+import { agregarUsuario } from "../slices/usuariosSlice";
 
 const Navbar = () => {
-  const url = "https://calcount.develotion.com/";
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [showRegistro, setShowRegistro] = useState(false);
-  const [paises, setPaises] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [selectValue, setSelectValue] = useState("");
@@ -19,7 +21,8 @@ const Navbar = () => {
   const [responseMessage, setResponseMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const isLoggedIn = localStorage.getItem("isLoggedIn");
-
+  const dispatch = useDispatch();
+  const paises = useSelector((state) => state.paisesSlice.paises);
   const handleShowDash = () => {
     if (isLoggedIn) {
       navigate("/dashboard");
@@ -49,20 +52,14 @@ const Navbar = () => {
     setShowRegistro(true);
   };
 
-  const fetchPaises = async () => {
-    const res = await fetch(url + "paises.php", {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-      },
-    });
-    const data = await res.json();
-    const paisesArray = Array.from(Object.values(data.paises));
-    setPaises(paisesArray);
-  };
+  const obtenerPaises = async () => {
+    const paisesAPI = await obtenerPaisesAPI();
+    dispatch(cargarPaises(paisesAPI));
+  }
 
   useEffect(() => {
-    fetchPaises();
+    obtenerPaises();
+    // eslint-disable-next-line
   }, []);
 
   const registroUsuario = async () => {
@@ -75,42 +72,35 @@ const Navbar = () => {
       setResponseMessage("Debe ingresar todos los campos!");
       setOpenSnackbar(true);
     } else {
-      const res = await fetch(url + "usuarios.php", {
-        method: "POST",
-        body: JSON.stringify({
-          usuario: username,
-          password: password,
-          selectValue: selectValue,
-          calorias: calorias,
-        }),
-        headers: {
-          accept: "application/json",
-        },
-      });
-      const json = await res.json();
-      if (json.codigo === 200) {
-        setResponseMessage("Registro Exitoso!");
-        setOpenSnackbar(true);
-        handleShow();
-      } else if (json.codigo === 409) {
-        setResponseMessage(json.mensaje);
+      try {
+        const response = await registroUsuarioAPI();
+        if (response.codigo === 200) {
+          setResponseMessage("Registro Exitoso!");
+          setOpenSnackbar(true);
+          handleShow();
+          const idUsuario = response.id;
+          const nuevoUsuario = {
+            id: idUsuario,
+            username: username,
+            password: password,
+            pais: selectValue,
+            calorias: calorias
+          }
+          dispatch(agregarUsuario(nuevoUsuario))
+        } else if (response.codigo === 409) {
+          setResponseMessage(response.mensaje);
+          setOpenSnackbar(true);
+        }
+
+      } catch (error) {
+        setResponseMessage(error);
         setOpenSnackbar(true);
       }
     }
   };
 
   const loginUsuario = async () => {
-    const res = await fetch(url + "login.php", {
-      method: "POST",
-      body: JSON.stringify({
-        usuario: username,
-        password: password,
-      }),
-      headers: {
-        accept: "application/json",
-      },
-    });
-    const json = await res.json();
+    const json = await loginUsuarioAPI(username, password);
     if (json.codigo === 200) {
       setResponseMessage("Login Exitoso!");
       setOpenSnackbar(true);
@@ -125,8 +115,6 @@ const Navbar = () => {
     }
   };
 
-  console.log(localStorage);
-
   const handleKeyDown = (event) => {
     if (event.keyCode === 13) {
       loginUsuario(event);
@@ -134,9 +122,10 @@ const Navbar = () => {
   };
   const Logout = () => {
     const cerrarSesion = () => {
-      localStorage.removeItem("isLoggedIn");
+      /*localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("sessionId");
-      localStorage.removeItem("apiKey");
+      localStorage.removeItem("apiKey");*/
+      localStorage.clear()
       setResponseMessage("Sesión Finalizada");
       setOpenSnackbar(true);
       navigate("/");
