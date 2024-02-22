@@ -16,17 +16,25 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 
 dayjs.extend(isSameOrBefore);
 
-const CardAgregarRegistro = ({ handleSubmit, alimentos, selectValueAlimento, setSelectValueAlimento, setValueFecha, setCantidad }) => {
-
+const CardAgregarRegistro = ({
+  handleSubmit,
+  alimentos,
+  selectValueAlimento,
+  setSelectValueAlimento,
+  setValueFecha,
+  setCantidad,
+}) => {
   return (
-
-    <Card style={{ marginLeft: "20px" }}>
+    <Card style={{ marginLeft: "10px", height: "100%" }}>
       <CardContent>
         <Form>
           <Form.Group controlId="formBasicEmail">
-            <Form.Label style={{
-              color: "#BE3A4A"
-            }}>
+            <Form.Label
+              style={{
+                color: "#BE3A4A",
+                marginLeft: "25%",
+              }}
+            >
               Agregar Registro
             </Form.Label>
             <Form.Group
@@ -38,24 +46,22 @@ const CardAgregarRegistro = ({ handleSubmit, alimentos, selectValueAlimento, set
               </Form.Label>
               <Select
                 value={selectValueAlimento}
-                onChange={(event) =>
-                  setSelectValueAlimento(event.target.value)
-                }
+                onChange={(event) => setSelectValueAlimento(event.target.value)}
                 label="Seleccionar Alimento"
                 fullWidth
               >
                 {Array.isArray(alimentos) & (alimentos.length > 0)
                   ? alimentos.map((alimento) => (
-                    <MenuItem key={alimento.id} value={alimento.id}>
-                      {alimento.nombre}
-                    </MenuItem>
-                  ))
+                      <MenuItem key={alimento.id} value={alimento.id}>
+                        {alimento.nombre}
+                      </MenuItem>
+                    ))
                   : null}
               </Select>
             </Form.Group>
           </Form.Group>
           <Form.Group
-            controlId="formBasicPassword"
+            controlId="formBasicCantidad"
             style={{ marginTop: "10px", marginBottom: "20px" }}
           >
             <Form.Label style={{ color: "#BE3A4A" }}>Cantidad</Form.Label>
@@ -65,18 +71,37 @@ const CardAgregarRegistro = ({ handleSubmit, alimentos, selectValueAlimento, set
               onChange={(event) => setCantidad(event.target.value)}
             />
           </Form.Group>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DesktopDatePicker
-              label="Seleccionar fecha"
-              onChange={(date) => setValueFecha(dayjs(date).format('YYYY-MM-DD'))}
-              renderInput={(params) => (
-                <TextField {...params} style={{ marginTop: "20px" }} />
-              )}
-            />
-          </LocalizationProvider>
+          <Form.Group
+            controlId="formBasicCalendario"
+            style={{
+              width: "100%",
+            }}
+          >
+            <LocalizationProvider
+              style={{
+                width: "100%",
+              }}
+              dateAdapter={AdapterDayjs}
+            >
+              <DesktopDatePicker
+                label="Seleccionar fecha"
+                onChange={(date) =>
+                  setValueFecha(dayjs(date).format("YYYY-MM-DD"))
+                }
+                renderInput={(params) => (
+                  <TextField {...params} style={{ marginTop: "20px" }} />
+                )}
+              />
+            </LocalizationProvider>
+          </Form.Group>
           <Button
-            variant="primary"
-            style={{ color: "#BE3A4A" }}
+            style={{
+              backgroundColor: "#BE3A4A",
+              color: "#FFFFFF",
+              marginTop: "20px",
+              width: "100%",
+              marginRight: "auto",
+            }}
             onClick={() => {
               handleSubmit();
             }}
@@ -86,9 +111,7 @@ const CardAgregarRegistro = ({ handleSubmit, alimentos, selectValueAlimento, set
         </Form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default CardAgregarRegistro
-
-
+export default CardAgregarRegistro;

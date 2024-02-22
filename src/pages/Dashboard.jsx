@@ -1,35 +1,46 @@
 import React, { useEffect, useState } from "react";
-import {
-  Grid,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Card,
-  CardContent,
-  Snackbar,
-} from "@mui/material";
+import { Grid, Snackbar, Typography } from "@mui/material";
 import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
 import es from "dayjs/locale/es";
-
+import { useLocation } from "react-router-dom";
 import CardAgregarRegistro from "../components/CardAgregarRegistro";
-import { agregarRegistroAPI, obtenerAlimentosAPI, obtenerRegistrosPorUsuarioAPI } from "../services/service";
+import CardFiltro from "../components/CardFiltro";
+import {
+  agregarRegistroAPI,
+  obtenerAlimentosAPI,
+  obtenerRegistrosPorUsuarioAPI,
+  eliminarRegistroAPI,
+  usuariosPorPaisAPI,
+  obtenerPaisesAPI,
+} from "../services/service";
 import { cargarAlimentos } from "../slices/alimentosSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { agregarRegistro, cargarRegistrosPorUsuario } from "../slices/registrosSlice";
-import { buscarAlimento } from "../utils/util";
-import { cargarUsuarios } from "../slices/usuariosSlice";
-dayjs.locale(es);
+import {
+  agregarRegistro,
+  cargarRegistrosPorUsuario,
+  borrarRegistro,
+} from "../slices/registrosSlice";
+import CardTabla from "../components/CardTabla";
+import CardTotalCalorias from "../components/CardTotalCalorias";
+import CardTotalCaloriasIngeridas from "../components/CardTotalCaloriasIngeridas";
+import TiempoRestante from "../components/TiempoRestante";
+import GraficoCantidadPorAlimento from "../components/GraficoCantidadPorAlimento";
+import GraficoCantidadPorFecha from "../components/GraficoCaloriasPorFecha";
+import MapaUsuariosPorPais from "../components/MapaUsuariosPorPais";
 
+dayjs.locale(es);
+dayjs.extend(isBetween);
 
 const Dashboard = () => {
-  const dispatch = useDispatch()
-  const urlImagenes = "https://calcount.develotion.com/imgs/"
+  const dispatch = useDispatch();
 
-  const fechaActual = new Date()
-  const fechaHoyFormateada = fechaActual.toISOString().split('T')[0];
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const caloriasDiarias = queryParams.get("caloriasDiarias");
+
+  const fechaActual = new Date();
+  const fechaHoyFormateada = fechaActual.toISOString().split("T")[0];
 
   const [responseMessage, setResponseMessage] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -42,129 +53,231 @@ const Dashboard = () => {
   const [valueFecha, setValueFecha] = useState("");
 
   const alimentos = useSelector((state) => state.alimentosSlice.alimentos);
-  const usuarios = useSelector((state) => state.usuariosSlice.usuarios)
   const registros = useSelector((state) => state.registrosSlice.registros);
 
-  const [alimentoAMostrar, setAlimentoAMostrar] = useState("");
-  //const [usuarioAMostrar, setUsuarioAMostrar] = useState("");
+  const [arrayRegistrosYAlimentos, setArrayRegistrosYAlimentos] = useState([]);
+  const [originalRegistrosYAlimentos, setOriginalRegistrosYAlimentos] =
+    useState([]);
+  const [usuariosPorPais, setUsuariosPorPais] = useState([]);
+  const [paises, setPaises] = useState([]);
+
+  const [filtro, setFiltro] = useState("Todos");
+
+  const [totalCaloriasHoy, setTotalCaloriasHoy] = useState(0);
+  const [totalCaloriasIngeridas, setTotalCaloriasIngeridas] = useState(0);
 
   const obtenerAlimentos = async () => {
     const alimentosAPI = await obtenerAlimentosAPI(userId, userApiKey);
     dispatch(cargarAlimentos(alimentosAPI));
   };
 
-  const obtenerRegistrosPorUsuario = async () => {
-    const cargaDeRegistros = await obtenerRegistrosPorUsuarioAPI(userId, userApiKey)
-    dispatch(cargarRegistrosPorUsuario(cargaDeRegistros))
-  }
+  const obtenerPaises = async () => {
+    const paisesAPI = await obtenerPaisesAPI();
+    setPaises(paisesAPI);
+  };
 
-  const obtenerUsuarios = () => {
-    dispatch(cargarUsuarios())
-  }
+  const obtenerRegistrosPorUsuario = async () => {
+    const cargaDeRegistros = await obtenerRegistrosPorUsuarioAPI(
+      userId,
+      userApiKey
+    );
+    dispatch(cargarRegistrosPorUsuario(cargaDeRegistros));
+  };
+
+  const obtenerUsuariosPorPais = async () => {
+    const arrayUsuariosPorPais = await usuariosPorPaisAPI(userId, userApiKey);
+    setUsuariosPorPais(arrayUsuariosPorPais);
+    //dispatch(cargarUsuariosPorPais(arrayUsuariosPorPais));
+  };
+
+  const totalDeCaloriasHoy = () => {
+    const fechaHoy = dayjs().startOf("day");
+    const arrayRegistrosYAlimentosFiltrados = arrayRegistrosYAlimentos.filter(
+      (row) => dayjs(row.fecha).startOf("day").isSame(fechaHoy, "day")
+    );
+    const sumaCaloriasHoy = arrayRegistrosYAlimentosFiltrados.reduce(
+      (acumulador, row) => {
+        let porcionNumerica = parseFloat(row.porcion.replace(/[^\d.-]/g, ""));
+        return acumulador + (row.calorias * row.cantidad) / porcionNumerica;
+      },
+      0
+    );
+    setTotalCaloriasHoy(sumaCaloriasHoy);
+  };
+  const totalDeCaloriasIngeridas = () => {
+    const sumaCaloriasIngeridas = arrayRegistrosYAlimentos.reduce(
+      (acumulador, row) => {
+        let porcionNumerica = parseFloat(
+          row.porcion.replace(/[^\d.mug-]/g, "")
+        );
+        return acumulador + (row.calorias * row.cantidad) / porcionNumerica;
+      },
+      0
+    );
+    setTotalCaloriasIngeridas(sumaCaloriasIngeridas);
+  };
 
   useEffect(() => {
     obtenerAlimentos();
-    obtenerRegistrosPorUsuario()
-    obtenerUsuarios()
+    obtenerRegistrosPorUsuario();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dispatch]);
 
+  const eliminarRegistro = async (id) => {
+    const response = await eliminarRegistroAPI(id, userId, userApiKey);
+    if (response.codigo === 200) {
+      setResponseMessage("Registro eliminado exitosamente!");
+      setOpenSnackbar(true);
+      dispatch(borrarRegistro(id));
+      totalDeCaloriasHoy();
+    }
+  };
+
+  const vaciarCampos = () => {
+    setSelectValueAlimento("");
+  };
+
+  const handleFiltroChange = (event) => {
+    const selectedFiltro = event.target.value;
+    setFiltro(selectedFiltro);
+  };
 
   const agregarRegistroPorUsuario = async () => {
-    if (
-      selectValueAlimento === "" ||
-      cantidad === "" ||
-      valueFecha === ""
-    ) {
+    if (selectValueAlimento === "" || cantidad === "" || valueFecha === "") {
       setResponseMessage("Debe ingresar todos los campos!");
       setOpenSnackbar(true);
     } else {
       if (valueFecha > fechaHoyFormateada) {
-        setResponseMessage("La fecha seleccionada no puede ser posterior a la fecha actual!");
+        setResponseMessage(
+          "La fecha seleccionada no puede ser posterior a la fecha actual!"
+        );
         setOpenSnackbar(true);
-      }
-      else {
-        let fecha = valueFecha.replace(/\//g, '-');
-        const nuevoRegistrosAPI = await agregarRegistroAPI(userId, userApiKey, selectValueAlimento, cantidad, fecha);
-        let idUsuario = parseInt(userId)
+      } else {
+        let fecha = valueFecha.replace(/\//g, "-");
+        const nuevoRegistrosAPI = await agregarRegistroAPI(
+          userId,
+          userApiKey,
+          selectValueAlimento,
+          cantidad,
+          fecha
+        );
+        let idUsuario = parseInt(userId);
         if (nuevoRegistrosAPI.codigo === 200) {
           const agregarNuevoRegistro = {
             id: nuevoRegistrosAPI.idRegistro,
             idAlimento: selectValueAlimento,
             idUsuario: idUsuario,
             cantidad: cantidad,
-            fecha: fecha
-
-          }
-          dispatch(agregarRegistro(agregarNuevoRegistro))
-          const alimentoAEncontrar = buscarAlimento(selectValueAlimento, alimentos)
-          //const usuarioAEncontrar = buscarUsuario(userId, usuarios)
-          setAlimentoAMostrar(alimentoAEncontrar)
-          //setUsuarioAMostrar(usuarioAEncontrar)
+            fecha: fecha,
+          };
+          setResponseMessage("Registro agregado exitosamente!");
+          setOpenSnackbar(true);
+          dispatch(agregarRegistro(agregarNuevoRegistro));
+          totalDeCaloriasHoy();
+          vaciarCampos();
         }
       }
-
     }
   };
+
+  useEffect(() => {
+    const registrosYAlimentos = registros.map((registro) => {
+      const alimento = alimentos.find(
+        (alimento) => alimento.id === registro.idAlimento
+      );
+      if (alimento) {
+        const { id, ...restoAlimento } = alimento;
+        return { ...registro, ...restoAlimento, idAlimento: id };
+      } else {
+        return registro;
+      }
+    });
+    setArrayRegistrosYAlimentos(registrosYAlimentos);
+    setOriginalRegistrosYAlimentos([...registrosYAlimentos]);
+  }, [registros, alimentos]);
+
+  useEffect(() => {
+    const fechaHoy = dayjs();
+    const fechaSemanaAntes = fechaHoy.subtract(1, "week");
+    const fechaMesAntes = fechaHoy.subtract(1, "month");
+    const filtrarRegistros = () => {
+      let arrayRegistrosYAlimentosFiltrados;
+      if (filtro === "Todos") {
+        arrayRegistrosYAlimentosFiltrados = originalRegistrosYAlimentos;
+      } else if (filtro === "Semana") {
+        arrayRegistrosYAlimentosFiltrados = originalRegistrosYAlimentos.filter(
+          (row) => dayjs(row.fecha).isBetween(fechaSemanaAntes, fechaHoy)
+        );
+      } else if (filtro === "Mes") {
+        arrayRegistrosYAlimentosFiltrados = originalRegistrosYAlimentos.filter(
+          (row) => dayjs(row.fecha).isBetween(fechaMesAntes, fechaHoy)
+        );
+      }
+      setArrayRegistrosYAlimentos(arrayRegistrosYAlimentosFiltrados);
+    };
+
+    filtrarRegistros();
+  }, [filtro, originalRegistrosYAlimentos]);
+
+  useEffect(() => {
+    totalDeCaloriasHoy();
+    obtenerUsuariosPorPais();
+    obtenerPaises();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registros, arrayRegistrosYAlimentos, originalRegistrosYAlimentos]);
+
+  useEffect(() => {
+    totalDeCaloriasIngeridas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrayRegistrosYAlimentos, originalRegistrosYAlimentos]);
+
   return (
     <div>
-      <div
+      <Typography
         style={{
+          color: "#BE3A4A",
+          fontSize: "20px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <h4 style={{ color: "#BE3A4A" }}>Dashboard</h4>
-      </div>
-      <Grid container spacing={4}>
-        <Grid item xs={3}>
+        Dashboard
+      </Typography>
+      <Grid container spacing={2} style={{ marginTop: "1%" }}>
+        <Grid item xs={2}>
+          <div style={{ height: "400px" }}>
+            <CardAgregarRegistro
+              handleSubmit={agregarRegistroPorUsuario}
+              alimentos={alimentos}
+              setSelectValueAlimento={setSelectValueAlimento}
+              selectValueAlimento={selectValueAlimento}
+              setCantidad={setCantidad}
+              setValueFecha={setValueFecha}
+            />
+          </div>
+        </Grid>
+        <Grid item xs={8}>
+          <div style={{ height: "100%" }}>
+            <CardTabla
+              arrayRegistrosYAlimentos={arrayRegistrosYAlimentos}
+              eliminarRegistro={eliminarRegistro}
+            />
+          </div>
+        </Grid>
+        <Grid item xs={2} style={{ alignItems: "center" }}>
+          <CardFiltro filtro={filtro} handleFiltroChange={handleFiltroChange} />
 
-          <CardAgregarRegistro handleSubmit={agregarRegistroPorUsuario} alimentos={alimentos}
-            setSelectValueAlimento={setSelectValueAlimento} selectValueAlimento={selectValueAlimento} setCantidad={setCantidad} setValueFecha={setValueFecha}
-
+          <CardTotalCaloriasIngeridas
+            totalCaloriasIngeridas={totalCaloriasIngeridas}
           />
+          <CardTotalCalorias
+            totalCalorias={totalCaloriasHoy}
+            caloriasDiarias={caloriasDiarias}
+          />
+          <TiempoRestante />
         </Grid>
-        <Grid item xs={6}>
-          <Card style={{ marginLeft: "20px" }}>
-            <CardContent>
 
-              <TableContainer style={{ overflowX: "auto", marginTop: "1em" }}>
-                <Table aria-label="data grid">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell style={{ color: "#BE3A4A" }}>Nombre</TableCell>
-                      <TableCell style={{ color: "#BE3A4A" }}>Alimento</TableCell>
-                      <TableCell style={{ color: "#BE3A4A" }} >Cantidad</TableCell>
-                      <TableCell style={{ color: "#BE3A4A" }}>Fecha</TableCell>
-                      <TableCell style={{ color: "#BE3A4A" }}>Imagen</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {registros.map((row) => (
-                      <TableRow key={row.id}>
-                        <TableCell component="th" scope="row">
-                          {row.idUsuario}
-                        </TableCell>
-                        <TableCell component="th" scope="row">
-                          {row.idAlimento}
-                        </TableCell>
-                        <TableCell>{row.cantidad}</TableCell>
-                        <TableCell>{row.fecha}</TableCell>
-                        <TableCell><img
-                          src={urlImagenes + "Zanahoria.png"}
-                          alt={"Zanahoria.png"}
-                          style={{ maxWidth: '50px', maxHeight: '50px' }} // ajusta el tamaño según tus necesidades
-                        /></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-            </CardContent>
-          </Card>
-        </Grid>
         <Snackbar
           open={openSnackbar}
           onClose={() => setOpenSnackbar(false)}
@@ -176,6 +289,27 @@ const Dashboard = () => {
             transform: "translate(-50%, -50%)",
           }}
         />
+      </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={4}>
+          <MapaUsuariosPorPais
+            style={{ maringBottom: "10px" }}
+            usuariosPorPais={usuariosPorPais}
+            paises={paises}
+          />
+        </Grid>
+        <Grid item xs={4} style={{ marginTop: "2%" }}>
+          <GraficoCantidadPorAlimento
+            alimentos={alimentos}
+            registros={registros}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <GraficoCantidadPorFecha
+            alimentos={alimentos}
+            registros={registros}
+          />
+        </Grid>
       </Grid>
     </div>
   );

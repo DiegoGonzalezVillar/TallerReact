@@ -5,8 +5,12 @@ import LoginModal from "./LoginModal";
 import RegistroModal from "./RegistroModal";
 import logo from "../images/logo3.png";
 import Snackbar from "@mui/material/Snackbar";
-import { loginUsuarioAPI, obtenerPaisesAPI, registroUsuarioAPI } from "../services/service";
-import { useDispatch, useSelector } from 'react-redux'
+import {
+  loginUsuarioAPI,
+  obtenerPaisesAPI,
+  registroUsuarioAPI,
+} from "../services/service";
+import { useDispatch, useSelector } from "react-redux";
 import { cargarPaises } from "../slices/paisesSlice";
 import { agregarUsuario } from "../slices/usuariosSlice";
 
@@ -55,7 +59,7 @@ const Navbar = () => {
   const obtenerPaises = async () => {
     const paisesAPI = await obtenerPaisesAPI();
     dispatch(cargarPaises(paisesAPI));
-  }
+  };
 
   useEffect(() => {
     obtenerPaises();
@@ -72,28 +76,32 @@ const Navbar = () => {
       setResponseMessage("Debe ingresar todos los campos!");
       setOpenSnackbar(true);
     } else {
-      try {
-        const response = await registroUsuarioAPI();
-        if (response.codigo === 200) {
-          setResponseMessage("Registro Exitoso!");
-          setOpenSnackbar(true);
-          handleShow();
-          const idUsuario = response.id;
-          const nuevoUsuario = {
-            id: idUsuario,
-            username: username,
-            password: password,
-            pais: selectValue,
-            calorias: calorias
-          }
-          dispatch(agregarUsuario(nuevoUsuario))
-        } else if (response.codigo === 409) {
-          setResponseMessage(response.mensaje);
-          setOpenSnackbar(true);
-        }
-
-      } catch (error) {
-        setResponseMessage(error);
+      const response = await registroUsuarioAPI(
+        username,
+        password,
+        selectValue,
+        calorias
+      );
+      if (response.codigo === 200) {
+        setResponseMessage("Registro Exitoso!");
+        setOpenSnackbar(true);
+        let caloriasDiarias = response.caloriasDiarias;
+        const idUsuario = response.id;
+        const nuevoUsuario = {
+          id: idUsuario,
+          username: username,
+          password: password,
+          pais: selectValue,
+          calorias: calorias,
+        };
+        dispatch(agregarUsuario(nuevoUsuario));
+        localStorage.setItem("isLoggedIn", true);
+        localStorage.setItem("sessionId", idUsuario);
+        localStorage.setItem("apiKey", response.apiKey);
+        handleCloseRegistro();
+        navigate(`/dashboard?caloriasDiarias=${caloriasDiarias}`);
+      } else if (response.codigo === 409) {
+        setResponseMessage(response.mensaje);
         setOpenSnackbar(true);
       }
     }
@@ -102,13 +110,14 @@ const Navbar = () => {
   const loginUsuario = async () => {
     const json = await loginUsuarioAPI(username, password);
     if (json.codigo === 200) {
-      setResponseMessage("Login Exitoso!");
+      let caloriasDiarias = json.caloriasDiarias;
+      setResponseMessage(`Login Exitoso! Bienvenido ${username}!`);
       setOpenSnackbar(true);
       localStorage.setItem("isLoggedIn", true);
       localStorage.setItem("sessionId", json.id);
       localStorage.setItem("apiKey", json.apiKey);
       handleClose();
-      navigate("/dashboard");
+      navigate(`/dashboard?caloriasDiarias=${caloriasDiarias}`);
     } else {
       setResponseMessage(json.mensaje);
       setOpenSnackbar(true);
@@ -122,10 +131,7 @@ const Navbar = () => {
   };
   const Logout = () => {
     const cerrarSesion = () => {
-      /*localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("sessionId");
-      localStorage.removeItem("apiKey");*/
-      localStorage.clear()
+      localStorage.clear();
       setResponseMessage("Sesión Finalizada");
       setOpenSnackbar(true);
       navigate("/");
