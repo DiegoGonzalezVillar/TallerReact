@@ -31,7 +31,6 @@ const GraficoCantidadPorFecha = ({ registros, alimentos }) => {
 
   const caloriasPorFecha = {};
 
-  // Obtener fechas de la última semana
   const fechasUltimaSemana = Array.from({ length: 7 }, (_, i) =>
     dayjs().subtract(i, "day").format("YYYY-MM-DD")
   );
@@ -43,14 +42,14 @@ const GraficoCantidadPorFecha = ({ registros, alimentos }) => {
       const alimento = alimentos.find((a) => a.id === registro.idAlimento);
 
       if (alimento) {
-        const caloriasAlimento = alimento.calorias; // Asumiendo que tu alimento tiene un campo de calorias
+        const caloriasAlimento = alimento.calorias;
 
         caloriasPorFecha[fechaRegistro] =
           (caloriasPorFecha[fechaRegistro] || 0) + caloriasAlimento;
       }
     }
 
-    return null; // La función de mapeo requiere que se devuelva algo, y en este caso, no necesitamos un nuevo array
+    return null;
   });
 
   const labels = fechasUltimaSemana.reverse();

@@ -4,8 +4,7 @@ import L from "leaflet";
 import markerIcon from "../images/ubi.png";
 import "leaflet/dist/leaflet.css";
 
-//recibe una lista de marcas, cada una tiene un titulo, contenido y lat, lng,
-function Mapa({ markersData }) {
+const Mapa = ({ markersData }) => {
   const center = [-16.5, -68.15];
   const zoom = 3;
   const size = { minWidth: "400px", minHeight: "400px" };
@@ -45,6 +44,6 @@ function Mapa({ markersData }) {
       </div>
     </div>
   );
-}
+};
 
 export default Mapa;
