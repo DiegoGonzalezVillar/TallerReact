@@ -58,13 +58,14 @@ const Dashboard = () => {
   const [arrayRegistrosYAlimentos, setArrayRegistrosYAlimentos] = useState([]);
   const [originalRegistrosYAlimentos, setOriginalRegistrosYAlimentos] =
     useState([]);
+
   const [usuariosPorPais, setUsuariosPorPais] = useState([]);
   const [paises, setPaises] = useState([]);
 
-  const [filtro, setFiltro] = useState("Todos");
-
   const [totalCaloriasHoy, setTotalCaloriasHoy] = useState(0);
   const [totalCaloriasIngeridas, setTotalCaloriasIngeridas] = useState(0);
+
+  const [filtro, setFiltro] = useState("Todos");
 
   const obtenerAlimentos = async () => {
     const alimentosAPI = await obtenerAlimentosAPI(userId, userApiKey);
@@ -87,7 +88,6 @@ const Dashboard = () => {
   const obtenerUsuariosPorPais = async () => {
     const arrayUsuariosPorPais = await usuariosPorPaisAPI(userId, userApiKey);
     setUsuariosPorPais(arrayUsuariosPorPais);
-    //dispatch(cargarUsuariosPorPais(arrayUsuariosPorPais));
   };
 
   const totalDeCaloriasHoy = () => {
@@ -97,20 +97,29 @@ const Dashboard = () => {
     );
     const sumaCaloriasHoy = arrayRegistrosYAlimentosFiltrados.reduce(
       (acumulador, row) => {
-        let porcionNumerica = parseFloat(row.porcion.replace(/[^\d.-]/g, ""));
-        return acumulador + (row.calorias * row.cantidad) / porcionNumerica;
+        if (row.porcion) {
+          let porcionNumerica = parseFloat(row.porcion.replace(/[^\d.-]/g, ""));
+          return acumulador + (row.calorias * row.cantidad) / porcionNumerica;
+        } else {
+          return acumulador;
+        }
       },
       0
     );
     setTotalCaloriasHoy(sumaCaloriasHoy);
   };
+
   const totalDeCaloriasIngeridas = () => {
     const sumaCaloriasIngeridas = arrayRegistrosYAlimentos.reduce(
       (acumulador, row) => {
-        let porcionNumerica = parseFloat(
-          row.porcion.replace(/[^\d.mug-]/g, "")
-        );
-        return acumulador + (row.calorias * row.cantidad) / porcionNumerica;
+        if (row.porcion) {
+          let porcionNumerica = parseFloat(
+            row.porcion.replace(/[^\d.mug-]/g, "")
+          );
+          return acumulador + (row.calorias * row.cantidad) / porcionNumerica;
+        } else {
+          return acumulador;
+        }
       },
       0
     );
@@ -135,6 +144,7 @@ const Dashboard = () => {
 
   const vaciarCampos = () => {
     setSelectValueAlimento("");
+    setCantidad("");
   };
 
   const handleFiltroChange = (event) => {
@@ -145,6 +155,9 @@ const Dashboard = () => {
   const agregarRegistroPorUsuario = async () => {
     if (selectValueAlimento === "" || cantidad === "" || valueFecha === "") {
       setResponseMessage("Debe ingresar todos los campos!");
+      setOpenSnackbar(true);
+    } else if (isNaN(parseFloat(cantidad)) || parseFloat(cantidad) <= 0) {
+      setResponseMessage("La cantidad debe ser un número mayor a 0!");
       setOpenSnackbar(true);
     } else {
       if (valueFecha > fechaHoyFormateada) {
@@ -254,6 +267,7 @@ const Dashboard = () => {
               selectValueAlimento={selectValueAlimento}
               setCantidad={setCantidad}
               setValueFecha={setValueFecha}
+              cantidad={cantidad}
             />
           </div>
         </Grid>

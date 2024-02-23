@@ -74,10 +74,12 @@ const RegistroModal = ({
               controlId="formBasicCalorias"
               style={{ marginTop: "10px" }}
             >
-              <Form.Label style={{ color: "#BE3A4A" }}>Calorias</Form.Label>
+              <Form.Label style={{ color: "#BE3A4A" }}>
+                Calorias Diarias
+              </Form.Label>
               <Form.Control
                 type="text"
-                placeholder=" Ingresar Calorias"
+                placeholder=" Ingresar calorias diarias"
                 onChange={(event) => setCalorias(event.target.value)}
               />
             </Form.Group>

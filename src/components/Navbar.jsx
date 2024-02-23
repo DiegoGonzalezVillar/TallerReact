@@ -75,6 +75,9 @@ const Navbar = () => {
     ) {
       setResponseMessage("Debe ingresar todos los campos!");
       setOpenSnackbar(true);
+    } else if (isNaN(parseFloat(calorias)) || parseFloat(calorias) <= 0) {
+      setResponseMessage("Las calorias diarias debe ser un número mayor a 0!");
+      setOpenSnackbar(true);
     } else {
       const response = await registroUsuarioAPI(
         username,

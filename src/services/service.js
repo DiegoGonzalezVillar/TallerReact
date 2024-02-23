@@ -137,6 +137,10 @@ export const usuariosPorPaisAPI = (userId, userApiKey) => {
   })
     .then((response) => response.json())
     .then((json) => {
-      return Array.from(Object.values(json.paises));
+      if (json.paises) {
+        return Array.from(Object.values(json.paises));
+      } else {
+        return [];
+      }
     });
 };

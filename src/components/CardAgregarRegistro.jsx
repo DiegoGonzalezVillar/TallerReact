@@ -23,6 +23,7 @@ const CardAgregarRegistro = ({
   setSelectValueAlimento,
   setValueFecha,
   setCantidad,
+  cantidad,
 }) => {
   return (
     <Card style={{ marginLeft: "10px", height: "100%" }}>
@@ -68,6 +69,7 @@ const CardAgregarRegistro = ({
             <Form.Control
               type="text"
               placeholder="Ingresar Cantidad"
+              value={cantidad}
               onChange={(event) => setCantidad(event.target.value)}
             />
           </Form.Group>
