@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Card, CardContent, Typography } from "@mui/material";
+import { Card, Typography } from "@mui/material";
 
 const TiempoRestante = () => {
   const fechaObjetivo = dayjs("2024-03-31");
@@ -52,20 +52,18 @@ const TiempoRestante = () => {
     <div>
       <Card
         style={{
-          marginTop: "10px",
+          marginTop: "15px",
           marginRight: "10px",
           textAlign: "center",
         }}
       >
-        <CardContent>
-          <Typography style={{ color: "#BE3A4A", fontSize: "18px" }}>
-            Tiempo restante para definir nuevos objetivos:
-          </Typography>
-          <Typography style={{ color: "#BE3A4A", fontSize: "17px" }}>
-            {tiempoRestante.dias} días, {tiempoRestante.horas} horas,{" "}
-            {tiempoRestante.minutos} minutos, {tiempoRestante.segundos} segundos
-          </Typography>
-        </CardContent>
+        <Typography style={{ color: "#BE3A4A", fontSize: "20px" }}>
+          Tiempo restante para definir nuevos objetivos:
+        </Typography>
+        <Typography style={{ color: "#BE3A4A", fontSize: "18px" }}>
+          {tiempoRestante.dias} días, {tiempoRestante.horas} horas,{" "}
+          {tiempoRestante.minutos} minutos, {tiempoRestante.segundos} segundos
+        </Typography>
       </Card>
     </div>
   );

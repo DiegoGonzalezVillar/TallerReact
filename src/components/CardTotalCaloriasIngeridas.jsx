@@ -4,7 +4,7 @@ import { Card, Typography } from "@mui/material";
 const CardTotalCaloriasIngeridas = ({ totalCaloriasIngeridas }) => {
   return (
     <Card
-      style={{ marginTop: "10px", marginRight: "10px", textAlign: "center" }}
+      style={{ marginTop: "15px", marginRight: "10px", textAlign: "center" }}
     >
       <Typography style={{ color: "#BE3A4A", fontSize: "20px" }}>
         Total de calorias ingeridas:

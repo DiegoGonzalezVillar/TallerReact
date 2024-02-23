@@ -7,7 +7,12 @@ import "leaflet/dist/leaflet.css";
 const Mapa = ({ markersData }) => {
   const center = [-16.5, -68.15];
   const zoom = 3;
-  const size = { minWidth: "400px", minHeight: "400px" };
+  const size = {
+    minWidth: "350px",
+    minHeight: "350px",
+    marginTop: "20px",
+    marginLeft: "10px",
+  };
   const urlTileLayer = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
   const customMarkerIcon = L.icon({
@@ -21,27 +26,25 @@ const Mapa = ({ markersData }) => {
 
   return (
     <div>
-      <div>
-        <MapContainer center={center} zoom={zoom} style={size}>
-          <TileLayer url={urlTileLayer} />
-          {markersData?.map((marker) => {
-            const posMarker = [marker.lat, marker.lng];
-            const keyMarker = `${marker.lat}-${marker.lng}`;
-            return (
-              <Marker
-                key={keyMarker}
-                position={posMarker}
-                icon={customMarkerIcon}
-              >
-                <Popup>
-                  <h3>{marker.titulo}</h3>
-                  <p> {marker.cantidad}</p>
-                </Popup>
-              </Marker>
-            );
-          })}
-        </MapContainer>
-      </div>
+      <MapContainer center={center} zoom={zoom} style={size}>
+        <TileLayer url={urlTileLayer} />
+        {markersData?.map((marker) => {
+          const posMarker = [marker.lat, marker.lng];
+          const keyMarker = `${marker.lat}-${marker.lng}`;
+          return (
+            <Marker
+              key={keyMarker}
+              position={posMarker}
+              icon={customMarkerIcon}
+            >
+              <Popup>
+                <h3>{marker.titulo}</h3>
+                <p> {marker.cantidad}</p>
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
     </div>
   );
 };

@@ -26,7 +26,7 @@ const CardAgregarRegistro = ({
   cantidad,
 }) => {
   return (
-    <Card style={{ marginLeft: "10px", height: "100%" }}>
+    <Card style={{ marginLeft: "10px", maxHeight: "400px" }}>
       <CardContent>
         <Form>
           <Form.Group controlId="formBasicEmail">
@@ -100,7 +100,7 @@ const CardAgregarRegistro = ({
             style={{
               backgroundColor: "#BE3A4A",
               color: "#FFFFFF",
-              marginTop: "20px",
+              marginTop: "40px",
               width: "100%",
               marginRight: "auto",
             }}

@@ -17,7 +17,7 @@ const CardTotalCalorias = ({ totalCalorias, caloriasDiarias }) => {
     <Card
       style={{
         backgroundColor: fondo,
-        marginTop: "10px",
+        marginTop: "15px",
         marginRight: "10px",
         textAlign: "center",
       }}

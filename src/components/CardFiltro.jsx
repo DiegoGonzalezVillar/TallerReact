@@ -10,7 +10,7 @@ import {
 
 const CardFiltro = ({ filtro, handleFiltroChange }) => {
   return (
-    <Card style={{ height: "25%", marginRight: "10px" }}>
+    <Card style={{ marginRight: "10px" }}>
       <CardContent>
         <Typography
           style={{

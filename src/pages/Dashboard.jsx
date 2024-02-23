@@ -258,28 +258,24 @@ const Dashboard = () => {
         Dashboard
       </Typography>
       <Grid container spacing={2} style={{ marginTop: "1%" }}>
-        <Grid item xs={2}>
-          <div style={{ height: "400px" }}>
-            <CardAgregarRegistro
-              handleSubmit={agregarRegistroPorUsuario}
-              alimentos={alimentos}
-              setSelectValueAlimento={setSelectValueAlimento}
-              selectValueAlimento={selectValueAlimento}
-              setCantidad={setCantidad}
-              setValueFecha={setValueFecha}
-              cantidad={cantidad}
-            />
-          </div>
+        <Grid item xs={2} style={{ height: "100%" }}>
+          <CardAgregarRegistro
+            handleSubmit={agregarRegistroPorUsuario}
+            alimentos={alimentos}
+            setSelectValueAlimento={setSelectValueAlimento}
+            selectValueAlimento={selectValueAlimento}
+            setCantidad={setCantidad}
+            setValueFecha={setValueFecha}
+            cantidad={cantidad}
+          />
         </Grid>
-        <Grid item xs={8}>
-          <div style={{ height: "100%" }}>
-            <CardTabla
-              arrayRegistrosYAlimentos={arrayRegistrosYAlimentos}
-              eliminarRegistro={eliminarRegistro}
-            />
-          </div>
+        <Grid item xs={8} style={{ height: "100%" }}>
+          <CardTabla
+            arrayRegistrosYAlimentos={arrayRegistrosYAlimentos}
+            eliminarRegistro={eliminarRegistro}
+          />
         </Grid>
-        <Grid item xs={2} style={{ alignItems: "center" }}>
+        <Grid item xs={2} style={{ alignItems: "center", height: "100%" }}>
           <CardFiltro filtro={filtro} handleFiltroChange={handleFiltroChange} />
 
           <CardTotalCaloriasIngeridas
@@ -307,7 +303,6 @@ const Dashboard = () => {
       <Grid container spacing={3}>
         <Grid item xs={4}>
           <MapaUsuariosPorPais
-            style={{ maringBottom: "10px" }}
             usuariosPorPais={usuariosPorPais}
             paises={paises}
           />

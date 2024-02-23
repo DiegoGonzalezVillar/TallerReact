@@ -26,7 +26,7 @@ const GraficoCantidadPorFecha = ({ registros, alimentos }) => {
   const calcularMaximoEjeY = () => {
     const valores = Object.values(caloriasPorFecha);
     const maximo = Math.max(...valores);
-    return maximo + 30;
+    return maximo + 40;
   };
 
   const caloriasPorFecha = {};
@@ -106,7 +106,12 @@ const GraficoCantidadPorFecha = ({ registros, alimentos }) => {
       <Typography style={{ color: "#FFFFFF", fontSize: "20px" }}>
         Cantidad por Fecha
       </Typography>
-      <Bar data={data} options={options} plugins={[ChartDataLabels]} />
+      <Bar
+        style={{ marginRight: "10px" }}
+        data={data}
+        options={options}
+        plugins={[ChartDataLabels]}
+      />
     </div>
   );
 };
