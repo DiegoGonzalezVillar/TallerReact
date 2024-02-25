@@ -145,6 +145,7 @@ const Dashboard = () => {
   const vaciarCampos = () => {
     setSelectValueAlimento("");
     setCantidad("");
+    setValueFecha("")
   };
 
   const handleFiltroChange = (event) => {
@@ -267,6 +268,7 @@ const Dashboard = () => {
             setCantidad={setCantidad}
             setValueFecha={setValueFecha}
             cantidad={cantidad}
+            valueFecha={valueFecha}
           />
         </Grid>
         <Grid item xs={8} style={{ height: "100%" }}>

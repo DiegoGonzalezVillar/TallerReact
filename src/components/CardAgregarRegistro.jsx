@@ -24,6 +24,7 @@ const CardAgregarRegistro = ({
   setValueFecha,
   setCantidad,
   cantidad,
+  valueFecha
 }) => {
   return (
     <Card style={{ marginLeft: "10px", maxHeight: "400px" }}>
@@ -53,10 +54,10 @@ const CardAgregarRegistro = ({
               >
                 {Array.isArray(alimentos) & (alimentos.length > 0)
                   ? alimentos.map((alimento) => (
-                      <MenuItem key={alimento.id} value={alimento.id}>
-                        {alimento.nombre}
-                      </MenuItem>
-                    ))
+                    <MenuItem key={alimento.id} value={alimento.id}>
+                      {alimento.nombre}
+                    </MenuItem>
+                  ))
                   : null}
               </Select>
             </Form.Group>
@@ -87,6 +88,7 @@ const CardAgregarRegistro = ({
             >
               <DesktopDatePicker
                 label="Seleccionar fecha"
+                value={valueFecha}
                 onChange={(date) =>
                   setValueFecha(dayjs(date).format("YYYY-MM-DD"))
                 }

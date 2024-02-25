@@ -183,12 +183,6 @@ const Navbar = () => {
           </Button>
           <Button
             style={{ color: "#BE3A4A", marginRight: "20px", fontSize: "90%" }}
-            onClick={handleShowRegistro}
-          >
-            Registro
-          </Button>
-          <Button
-            style={{ color: "#BE3A4A", marginRight: "20px", fontSize: "90%" }}
             onClick={cerrarSesion}
           >
             Cerrar sesión
