@@ -9,9 +9,21 @@ import {
   TableBody,
   Card,
 } from "@mui/material";
+import { eliminarRegistroAPI } from "../services/service";
+import { useDispatch } from "react-redux";
+import { borrarRegistro } from "../slices/registrosSlice";
 
-const CardTabla = ({ arrayRegistrosYAlimentos, eliminarRegistro }) => {
+const CardTabla = ({ arrayRegistrosYAlimentos, userId, userApiKey, setResponseMessage, setOpenSnackbar }) => {
   const urlImagenes = "https://calcount.develotion.com/imgs/";
+  const dispatch = useDispatch()
+  const eliminarRegistro = async (id) => {
+    const response = await eliminarRegistroAPI(id, userId, userApiKey);
+    if (response.codigo === 200) {
+      setResponseMessage("Registro eliminado exitosamente!");
+      setOpenSnackbar(true);
+      dispatch(borrarRegistro(id));
+    }
+  };
   return (
     <Card
       style={{
@@ -41,7 +53,7 @@ const CardTabla = ({ arrayRegistrosYAlimentos, eliminarRegistro }) => {
                 <TableCell component="th" scope="row">
                   {row.nombre}
                 </TableCell>
-                <TableCell>{row.cantidad}</TableCell>
+                <TableCell>{row.cantidad}{row.porcion.slice(-1)}</TableCell>
                 <TableCell>{row.calorias}</TableCell>
                 <TableCell>{row.porcion}</TableCell>
                 <TableCell>{row.fecha}</TableCell>

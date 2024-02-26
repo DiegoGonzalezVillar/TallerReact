@@ -1,7 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Mapa from "./Mapa";
+import { obtenerPaisesAPI, usuariosPorPaisAPI } from "../services/service";
+import { useDispatch, useSelector } from "react-redux";
+import { cargarPaises } from "../slices/paisesSlice";
+import { cargarUsuariosPorPais } from "../slices/usuariosSlice";
 
-const MapaUsuariosPorPais = ({ usuariosPorPais, paises }) => {
+const MapaUsuariosPorPais = ({ userId, userApiKey }) => {
+
+  const dispatch = useDispatch()
+
+  const usuariosPorPais = useSelector((state) => state.usuariosSlice.usuarios);
+  const paises = useSelector((state) => state.paisesSlice.paises);
+
+  const obtenerPaises = async () => {
+    const paisesAPI = await obtenerPaisesAPI();
+    dispatch(cargarPaises(paisesAPI));
+  };
+
+  const obtenerUsuariosPorPais = async () => {
+    const arrayUsuariosPorPais = await usuariosPorPaisAPI(userId, userApiKey);
+    dispatch(cargarUsuariosPorPais(arrayUsuariosPorPais));
+  };
+
+  useEffect(() => {
+    obtenerPaises();
+    obtenerUsuariosPorPais();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch]);
+
   const arrayUsuariosPorPais = usuariosPorPais
     .filter((usuarioPorPais) =>
       paises.some((pais) => pais.id === usuarioPorPais.id)

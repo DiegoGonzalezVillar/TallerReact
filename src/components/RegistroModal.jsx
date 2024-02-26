@@ -63,10 +63,10 @@ const RegistroModal = ({
               >
                 {Array.isArray(paises) & (paises.length > 0)
                   ? paises.map((pais) => (
-                      <MenuItem key={pais.id} value={pais.id}>
-                        {pais.name}
-                      </MenuItem>
-                    ))
+                    <MenuItem key={pais.id} value={pais.id}>
+                      {pais.name}
+                    </MenuItem>
+                  ))
                   : null}
               </Select>
             </Form.Group>
@@ -78,7 +78,7 @@ const RegistroModal = ({
                 Calorias Diarias
               </Form.Label>
               <Form.Control
-                type="text"
+                type="number"
                 placeholder=" Ingresar calorias diarias"
                 onChange={(event) => setCalorias(event.target.value)}
               />

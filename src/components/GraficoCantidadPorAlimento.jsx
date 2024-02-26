@@ -10,6 +10,7 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import { useSelector } from "react-redux";
 
 ChartJS.register(
   CategoryScale,
@@ -20,7 +21,11 @@ ChartJS.register(
   Legend
 );
 
-const GraficoCantidadPorAlimento = ({ registros, alimentos }) => {
+const GraficoCantidadPorAlimento = () => {
+
+  const alimentos = useSelector((state) => state.alimentosSlice.alimentos);
+  const registros = useSelector((state) => state.registrosSlice.registros);
+
   const calcularMaximoEjeY = () => {
     const valores = Object.values(cantidadPorAlimento);
     const maximo = Math.max(...valores);
@@ -29,12 +34,10 @@ const GraficoCantidadPorAlimento = ({ registros, alimentos }) => {
 
   const cantidadPorAlimento = registros.reduce((acc, registro) => {
     const alimento = alimentos.find((a) => a.id === registro.idAlimento);
-
     if (alimento) {
       const nombreAlimento = alimento.nombre;
       acc[nombreAlimento] = (acc[nombreAlimento] || 0) + 1;
     }
-
     return acc;
   }, {});
 
